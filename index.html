@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -121,7 +120,6 @@
                         </div>
                         <!-- Galeria de Resultados -->
                         <div class="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto pr-1" id="gallery-results">
-                            <!-- Resultados carregados dinamicamente -->
                             <div class="text-xs text-slate-500 col-span-2 text-center py-4">Pesquise para carregar imagens ou use as sugestões.</div>
                         </div>
                     </div>
@@ -201,7 +199,7 @@
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Adicionar Texto</label>
                         <div class="space-y-2">
-                            <input type="text" id="tool-text-input" placeholder="Digite seu texto aqui..." class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 text-slate-200">
+                            <input type="text" id="tool-text-input" placeholder="Digite seu text aqui..." class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 text-slate-200">
                             
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
@@ -307,7 +305,7 @@
             <!-- Toast de Notificação Embutido -->
             <div id="toast" class="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-800 text-slate-200 px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2.5 text-xs opacity-0 pointer-events-none transition-all duration-300 transform translate-y-[-10px] z-50">
                 <i data-lucide="info" class="w-4 h-4 text-indigo-400" id="toast-icon"></i>
-                <span id="toast-message">Mensagem de teste</span>
+                <span id="toast-message">Mensagem</span>
             </div>
 
             <!-- Loading Spinner sobre o Canvas -->
@@ -319,13 +317,12 @@
                 </div>
             </div>
 
-            <!-- Container do Canvas que mantém o aspecto proporcional responsivo -->
+            <!-- Container do Canvas -->
             <div id="canvas-container" class="relative shadow-2xl transition-all duration-300 max-h-full max-w-full">
-                <!-- O Canvas visível onde tudo é renderizado -->
                 <canvas id="wallpaper-canvas" class="rounded-lg cursor-crosshair border border-slate-700/50 max-h-[75vh] max-w-[90vw]"></canvas>
             </div>
             
-            <!-- Ajuda de Arrastar ativa quando existem camadas móveis -->
+            <!-- Ajuda de Arrastar -->
             <div id="drag-hint" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-slate-900/90 border border-slate-800/80 backdrop-blur px-3 py-1.5 rounded-full text-[10px] text-slate-400 flex items-center gap-1.5 opacity-0 transition-opacity">
                 <i data-lucide="move" class="w-3 h-3 text-indigo-400"></i> Clique e arraste elementos (texto/emoji) para reposicionar
             </div>
@@ -335,15 +332,13 @@
 
     <!-- Script de lógica da aplicação -->
     <script>
-        // Configuração Geral e Variáveis Globais
-        const apiKey = ""; // Chave injetada em tempo de execução
+        const apiKey = "AIzaSyD-YOUR_ACTUAL_KEY_HERE"; 
         
         const canvas = document.getElementById('wallpaper-canvas');
         const ctx = canvas.getContext('2d');
         const canvasLoader = document.getElementById('canvas-loader');
         const dragHint = document.getElementById('drag-hint');
 
-        // Resoluções de renderização nativas (HD real para download, o CSS cuida de escalar)
         const resolutions = {
             mobile: { width: 1080, height: 1920 },
             desktop: { width: 1920, height: 1080 },
@@ -357,10 +352,9 @@
         let dragOffset = { x: 0, y: 0 };
         let isTextBold = false;
 
-        // Estado Completo da Arte / Wallpaper
         let state = {
-            bgImage: null, // Objeto HTML Image
-            bgSourceUrl: '', // Mantém o URL caso precise recarregar
+            bgImage: null,
+            bgSourceUrl: '',
             filters: {
                 brightness: 100,
                 contrast: 100,
@@ -369,32 +363,22 @@
                 blur: 0,
                 hueRotate: 0
             },
-            drawings: [], // Caminhos livres: { points: [{x, y}], color, size }
-            texts: [], // Textos adicionados: { id, text, x, y, size, color, font, bold }
-            emojis: [] // Emojis adicionados: { id, emoji, x, y, size }
+            drawings: [],
+            texts: [],
+            emojis: []
         };
 
-        // Imagem Padrão Inicial (Espaço/Estrelas)
         const placeholderImgUrl = 'https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=1200&auto=format&fit=crop';
 
-        // Inicialização
         window.onload = function() {
-            // Inicializar Ícones do Lucide
             lucide.createIcons();
-            
-            // Setar proporção inicial
             setAspectRatio('mobile');
-
-            // Carregar imagem padrão inicial
             loadBackgroundImage(placeholderImgUrl);
-
-            // Escutar eventos de redimensionamento e toque para os elementos móveis
             setupInteractions();
             setupFilterListeners();
             setupFileUpload();
         };
 
-        // Toast customizado
         function showNotification(message, isError = false) {
             const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toast-message');
@@ -416,7 +400,6 @@
             }, 4000);
         }
 
-        // Trocar Tabs de Configuração
         function switchTab(tabId) {
             const tabs = ['tab-image', 'tab-adjust', 'tab-tools'];
             const panels = ['panel-image', 'panel-adjust', 'panel-tools'];
@@ -440,7 +423,6 @@
             });
         }
 
-        // Escolher Proporção do Wallpaper
         function setAspectRatio(ratio) {
             currentRatio = ratio;
             const rButtons = ['mobile', 'desktop', 'square'];
@@ -453,18 +435,15 @@
                 }
             });
 
-            // Setar dimensões reais no Canvas
             canvas.width = resolutions[ratio].width;
             canvas.height = resolutions[ratio].height;
-
             redrawCanvas();
         }
 
-        // Carregar Imagem de Base
         function loadBackgroundImage(url) {
             showLoader("Carregando Imagem", "Formatando imagem para o estúdio...");
             const img = new Image();
-            img.crossOrigin = "anonymous"; // Importante para evitar erros de Canvas contaminado ao exportar
+            img.crossOrigin = "anonymous";
             img.onload = function() {
                 state.bgImage = img;
                 state.bgSourceUrl = url;
@@ -478,7 +457,6 @@
             img.src = url;
         }
 
-        // Busca no Unsplash
         document.getElementById('btn-search').addEventListener('click', () => {
             const query = document.getElementById('search-input').value;
             if (query) fetchUnsplashImages(query);
@@ -489,7 +467,6 @@
             fetchUnsplashImages(keyword);
         }
 
-        // Carrega imagens dinamicamente de forma simulada/curada para evitar limitação estrita de chaves de API
         function fetchUnsplashImages(query) {
             const gallery = document.getElementById('gallery-results');
             gallery.innerHTML = `
@@ -499,11 +476,8 @@
                 </div>
             `;
 
-            // Criamos termos e categorias reais de busca usando Unsplash Source
             const keywords = encodeURIComponent(query);
             const results = [];
-            
-            // Gerando 6 variações com ids/seeds únicos para evitar cache direto
             for (let i = 1; i <= 6; i++) {
                 results.push(`https://images.unsplash.com/featured/?${keywords}&sig=${i * 123}`);
             }
@@ -532,7 +506,6 @@
             }, 800);
         }
 
-        // Upload de arquivo local
         function setupFileUpload() {
             const upload = document.getElementById('file-upload');
             upload.addEventListener('change', (e) => {
@@ -547,7 +520,6 @@
             });
         }
 
-        // Gerador de Imagens por IA (Imagen 4.0 API com Backoff Exponencial)
         document.getElementById('btn-generate-ai').addEventListener('click', async () => {
             const prompt = document.getElementById('ai-prompt').value.trim();
             if (!prompt) {
@@ -563,13 +535,12 @@
                 showNotification("Wallpaper gerado com sucesso por IA!");
             } catch (err) {
                 console.error(err);
-                showNotification("Falha ao gerar imagem com IA. Tente um prompt diferente.", true);
+                showNotification("Falha ao gerar imagem com IA. Verifique sua chave ou tente outro prompt.", true);
             } finally {
                 hideLoader();
             }
         });
 
-        // Chamada da API com backoff exponencial
         async function callGeminiImagenAPI(promptText) {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
             const payload = {
@@ -578,7 +549,6 @@
                 ],
                 parameters: {
                     sampleCount: 1,
-                    // Ajustamos a proporção ideal no output da IA de acordo com a proporção escolhida
                     aspectRatio: currentRatio === 'mobile' ? '9:16' : currentRatio === 'desktop' ? '16:9' : '1:1',
                     outputMimeType: 'image/png'
                 }
@@ -591,43 +561,32 @@
                 try {
                     const response = await fetch(url, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
 
-                    if (!response.ok) {
-                        throw new Error(`HTTP status ${response.status}`);
-                    }
+                    if (!response.ok) throw new Error(`HTTP status ${response.status}`);
 
                     const result = await response.json();
                     const base64Bytes = result.predictions?.[0]?.bytesBase64Encoded;
                     if (base64Bytes) {
                         return `data:image/png;base64,${base64Bytes}`;
                     } else {
-                        throw new Error("Formato de resposta inesperado da API");
+                        throw new Error("Formato de resposta inesperado");
                     }
-
                 } catch (error) {
-                    if (attempt === maxRetries) {
-                        throw error;
-                    }
-                    // Backoff exponencial silencioso conforme diretrizes
+                    if (attempt === maxRetries) throw error;
                     await new Promise(res => setTimeout(res, delay));
                     delay *= 2;
                 }
             }
         }
 
-        // Lógica de Renderização do Canvas Central
         function redrawCanvas() {
             if (!state.bgImage) return;
 
-            // Limpa canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // 1. Renderizar Imagem de Fundo escalada (Capa Inteligente) com Filtros CSS simulados
             ctx.save();
             applyFiltersToContext();
 
@@ -637,11 +596,9 @@
             let sourceX = 0, sourceY = 0, sourceWidth = state.bgImage.width, sourceHeight = state.bgImage.height;
 
             if (imgRatio > canvasRatio) {
-                // Imagem mais larga que o canvas
                 sourceWidth = state.bgImage.height * canvasRatio;
                 sourceX = (state.bgImage.width - sourceWidth) / 2;
             } else {
-                // Imagem mais alta que o canvas
                 sourceHeight = state.bgImage.width / canvasRatio;
                 sourceY = (state.bgImage.height - sourceHeight) / 2;
             }
@@ -649,7 +606,6 @@
             ctx.drawImage(state.bgImage, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
             ctx.restore();
 
-            // 2. Renderizar Desenhos do Pincel
             state.drawings.forEach(drawing => {
                 if (drawing.points.length < 2) return;
                 ctx.beginPath();
@@ -665,7 +621,6 @@
                 ctx.stroke();
             });
 
-            // 3. Renderizar Textos
             state.texts.forEach(item => {
                 ctx.save();
                 ctx.font = `${item.bold ? 'bold ' : ''}${item.size}px "${item.font}"`;
@@ -673,7 +628,6 @@
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 
-                // Sombra suave para legibilidade
                 ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
                 ctx.shadowBlur = 12;
                 ctx.shadowOffsetX = 2;
@@ -683,21 +637,17 @@
                 ctx.restore();
             });
 
-            // 4. Renderizar Emojis / Stickers
             state.emojis.forEach(item => {
                 ctx.save();
                 ctx.font = `${item.size}px Arial`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                
                 ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
                 ctx.shadowBlur = 8;
-                
                 ctx.fillText(item.emoji, item.x, item.y);
                 ctx.restore();
             });
 
-            // Mostrar dica de drag se houver itens que possam ser movidos
             if (state.texts.length > 0 || state.emojis.length > 0) {
                 dragHint.classList.add('opacity-100');
             } else {
@@ -705,7 +655,6 @@
             }
         }
 
-        // Aplicação de Filtros de Imagem nativos no Canvas 2D
         function applyFiltersToContext() {
             let filterString = '';
             filterString += `brightness(${state.filters.brightness}%) `;
@@ -717,7 +666,6 @@
             ctx.filter = filterString;
         }
 
-        // Setup dos Listeners de Controle de Filtros
         function setupFilterListeners() {
             const filters = ['brightness', 'contrast', 'grayscale', 'sepia', 'blur', 'huerotate'];
             filters.forEach(f => {
@@ -742,12 +690,10 @@
                 });
             });
 
-            // Listener de Pincel
             document.getElementById('tool-brush-size').addEventListener('input', (e) => {
                 document.getElementById('val-brush-size').textContent = e.target.value + 'px';
             });
 
-            // Listener de Texto
             document.getElementById('tool-text-size').addEventListener('input', (e) => {
                 document.getElementById('val-font-size').textContent = e.target.value + 'px';
             });
@@ -756,32 +702,23 @@
             });
         }
 
-        // Resetar Filtros
         function resetFilters() {
             state.filters = { brightness: 100, contrast: 100, grayscale: 0, sepia: 0, blur: 0, hueRotate: 0 };
-            
             document.getElementById('filter-brightness').value = 100;
             document.getElementById('val-brightness').textContent = '100%';
-            
             document.getElementById('filter-contrast').value = 100;
             document.getElementById('val-contrast').textContent = '100%';
-            
             document.getElementById('filter-grayscale').value = 0;
             document.getElementById('val-grayscale').textContent = '0%';
-            
             document.getElementById('filter-sepia').value = 0;
             document.getElementById('val-sepia').textContent = '0%';
-            
             document.getElementById('filter-blur').value = 0;
             document.getElementById('val-blur').textContent = '0px';
-            
             document.getElementById('filter-huerotate').value = 0;
             document.getElementById('val-huerotate').textContent = '0°';
-
             redrawCanvas();
         }
 
-        // Ativar/Desativar modo de Pincel
         function toggleBrushMode() {
             isBrushActive = !isBrushActive;
             const btn = document.getElementById('btn-brush');
@@ -801,14 +738,12 @@
             lucide.createIcons();
         }
 
-        // Limpar Desenhos
         function clearDrawings() {
             state.drawings = [];
             redrawCanvas();
             showNotification("Desenhos apagados.");
         }
 
-        // Alternar Negrito do Texto
         function toggleTextBold() {
             isTextBold = !isTextBold;
             const btn = document.getElementById('tool-text-bold');
@@ -819,7 +754,6 @@
             }
         }
 
-        // Adicionar Camada de Texto
         function addTextLayer() {
             const input = document.getElementById('tool-text-input');
             const text = input.value.trim();
@@ -835,7 +769,6 @@
             const newText = {
                 id: 'txt_' + Date.now(),
                 text: text,
-                // Centraliza inicialmente
                 x: canvas.width / 2,
                 y: canvas.height / 2,
                 size: size,
@@ -845,19 +778,18 @@
             };
 
             state.texts.push(newText);
-            input.value = ''; // limpa input
+            input.value = '';
             redrawCanvas();
             showNotification("Texto adicionado! Arraste para reposicionar.");
         }
 
-        // Adicionar Emoji/Sticker
         function addEmoji(emoji) {
             const newEmoji = {
                 id: 'emj_' + Date.now(),
                 emoji: emoji,
                 x: canvas.width / 2,
                 y: canvas.height / 2,
-                size: 80 // tamanho padrão inicial elegante
+                size: 80
             };
 
             state.emojis.push(newEmoji);
@@ -865,7 +797,6 @@
             showNotification("Emoji adicionado! Arraste para reposicionar.");
         }
 
-        // Limpar tudo
         function clearLayers() {
             state.drawings = [];
             state.texts = [];
@@ -875,22 +806,16 @@
             showNotification("Edições limpas.");
         }
 
-        // Utilitários de Toque e Mouse para Desenhar e Arrastar no Canvas
         function setupInteractions() {
-            // Conversão de coordenadas da tela de visualização para a resolução real do Canvas
             function getCanvasCoordinates(e) {
                 const rect = canvas.getBoundingClientRect();
-                
-                // Pegando suporte a Toque (Mobile) ou clique de Mouse
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
                 const x = ((clientX - rect.left) / rect.width) * canvas.width;
                 const y = ((clientY - rect.top) / rect.height) * canvas.height;
                 return { x, y };
             }
 
-            // MOUSE DOWN / TOUCH START
             const handleStart = (e) => {
                 const coords = getCanvasCoordinates(e);
 
@@ -905,25 +830,21 @@
                         size: brushSize
                     });
                 } else {
-                    // Modo de seleção / arrastar camadas
                     selectedLayerIndex = -1;
                     
-                    // Verifica primeiro os emojis (prioridade superior por padrão de camada)
                     for (let i = state.emojis.length - 1; i >= 0; i--) {
                         const item = state.emojis[i];
                         const dist = Math.hypot(coords.x - item.x, coords.y - item.y);
-                        if (dist < item.size / 1.2) { // Área de clique aproximada
+                        if (dist < item.size / 1.2) {
                             selectedLayerIndex = { type: 'emoji', index: i };
                             dragOffset = { x: coords.x - item.x, y: coords.y - item.y };
                             break;
                         }
                     }
 
-                    // Se não selecionou emoji, verifica os textos
                     if (selectedLayerIndex === -1) {
                         for (let i = state.texts.length - 1; i >= 0; i--) {
                             const item = state.texts[i];
-                            // Aproximação do bounding box do texto
                             const wEstimate = ctx.measureText(item.text).width * 1.5;
                             const hEstimate = item.size;
                             
@@ -937,14 +858,13 @@
                 }
             };
 
-            // MOUSE MOVE / TOUCH MOVE
             const handleMove = (e) => {
                 if (isBrushActive && isDrawing) {
                     const coords = getCanvasCoordinates(e);
                     const currentDrawing = state.drawings[state.drawings.length - 1];
                     currentDrawing.points.push({ x: coords.x, y: coords.y });
                     redrawCanvas();
-                    e.preventDefault(); // previne scroll na tela mobile
+                    e.preventDefault();
                 } else if (selectedLayerIndex !== -1) {
                     const coords = getCanvasCoordinates(e);
                     const { type, index } = selectedLayerIndex;
@@ -961,44 +881,34 @@
                 }
             };
 
-            // MOUSE UP / TOUCH END
             const handleEnd = () => {
                 isDrawing = false;
                 selectedLayerIndex = -1;
             };
 
-            // Registrando Eventos do Mouse
             canvas.addEventListener('mousedown', handleStart);
             canvas.addEventListener('mousemove', handleMove);
             window.addEventListener('mouseup', handleEnd);
 
-            // Registrando Eventos de Toque (Mobile UX)
             canvas.addEventListener('touchstart', handleStart, { passive: false });
             canvas.addEventListener('touchmove', handleMove, { passive: false });
             window.addEventListener('touchend', handleEnd);
         }
 
-        // Exportar e Baixar imagem em HD real
         document.getElementById('btn-export').addEventListener('click', () => {
-            // Cria um link fantasma para acionar o download
             const link = document.createElement('a');
-            link.download = `wallpaper_studio_${currentRatio}_${Date.now()}.png`;
-            
-            // Renderiza na resolução completa
+            link.download = `wallpaper_${currentRatio}_${Date.now()}.png`;
             redrawCanvas();
-
-            // Usa execCommand para garantir maior compatibilidade ou download direto por dataURL
             try {
                 link.href = canvas.toDataURL('image/png');
                 link.click();
                 showNotification("Seu wallpaper foi baixado!");
             } catch (err) {
                 console.error(err);
-                showNotification("Erro ao exportar. Imagens externas de domínios restritos podem bloquear o download.", true);
+                showNotification("Erro ao exportar o canvas.", true);
             }
         });
 
-        // Helpers de Loading UI
         function showLoader(title, subtitle) {
             document.getElementById('loader-title').textContent = title;
             document.getElementById('loader-subtitle').textContent = subtitle;
@@ -1011,5 +921,3 @@
     </script>
 </body>
 </html>
-
-```
